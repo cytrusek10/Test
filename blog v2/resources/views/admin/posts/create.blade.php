@@ -1,0 +1,100 @@
+@extends('layouts.app')
+
+@section('title', 'Nowy post')
+
+@push('styles')
+<style>
+    .form-group { margin-bottom: 1.25rem; }
+    label { display: block; margin-bottom: 0.4rem; color: var(--muted); font-family: monospace; font-size: 0.85rem; }
+    input[type="text"], input[type="datetime-local"], select, textarea {
+        width: 100%;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 0.6rem 0.85rem;
+        color: var(--text);
+        font-size: 0.95rem;
+        font-family: inherit;
+    }
+    textarea { min-height: 300px; resize: vertical; }
+    input[type="checkbox"] { margin-right: 0.5rem; }
+    .btn { display: inline-block; padding: 0.6rem 1.5rem; border-radius: 6px; font-family: monospace; font-size: 0.9rem; text-decoration: none; cursor: pointer; border: none; }
+    .btn-primary { background: var(--accent); color: #000; }
+    .back-link { display: inline-block; color: var(--muted); text-decoration: none; font-family: monospace; font-size: 0.9rem; margin-bottom: 2rem; }
+</style>
+@endpush
+
+@section('content')
+    <a href="{{ route('admin.posts.index') }}" class="back-link">← wróć do listy</a>
+    <h1 style="margin-bottom:2rem">Nowy post</h1>
+
+    <form method="POST" action="{{ route('admin.posts.store') }}">
+        @csrf
+
+        <div class="form-group">
+            <label>Tytuł</label>
+            <input type="text" name="title" value="{{ old('title') }}" required>
+        </div>
+
+        <div class="form-group">
+            <label>Kategoria</label>
+            <select name="category" required>
+                <option value="technologia">💻 Technologia</option>
+                <option value="zycie">🌿 Życie</option>
+                <option value="jedzenie">🍕 Jedzenie</option>
+                <option value="muzyka">🎵 Muzyka</option>
+                <option value="sport">⚽ Sport</option>
+                <option value="inne">🎲 Inne</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Krótki opis (zajawka)</label>
+            <textarea name="excerpt" rows="3">{{ old('excerpt') }}</textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Treść</label>
+            <textarea name="content" required>{{ old('content') }}</textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Data publikacji</label>
+            <input type="datetime-local" name="published_at" value="{{ old('published_at', now()->format('Y-m-d\TH:i')) }}">
+        </div>
+
+        <div class="form-group">
+            <label>
+                <input type="checkbox" name="published" value="1" {{ old('published') ? 'checked' : '' }}>
+                Opublikowany
+            </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Zapisz post</button>
+        <button type="button" class="btn" style="background:var(--surface);border:1px solid var(--border);margin-left:0.5rem" onclick="preview()">Podgląd</button>
+    </form>
+
+    <script>
+        function preview() {
+            const form = document.querySelector('form');
+            const data = new FormData(form);
+
+            const previewForm = document.createElement('form');
+            previewForm.method = 'POST';
+            previewForm.action = '{{ route('admin.posts.preview') }}';
+            previewForm.target = '_blank';
+
+            for (const [key, value] of data.entries()) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = value;
+                previewForm.appendChild(input);
+            }
+
+            document.body.appendChild(previewForm);
+            previewForm.submit();
+            document.body.removeChild(previewForm);
+        }
+    </script>
+@endsection
